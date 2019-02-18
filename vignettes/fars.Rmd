@@ -1,0 +1,98 @@
+---
+title: "Usign the fars package"
+author: "Ryan Honomichl"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r set_global_options, include=FALSE}
+knitr::opts_chunk$set(error = TRUE)
+```
+
+# overview  
+This vignette is written for the package `fars` as part of week 4 assignment of the coursera course "R packages". The aim of this is to describe the functions in the package and their use cases. The packages consists of 5 functions:  
+
+  - `make_filename`  
+  
+  - `fars_read`  
+  
+  - `fars_read_years`  
+  
+  - `fars_summarize_year`  
+  
+  - `fars_map_state`  
+
+# Data  
+The functions provided for you in this assignment will be using data from the US National Highway Traffic Safety Administration's [Fatality Analysis Reporting System](https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars), which is a nationwide census providing the American public yearly data regarding fatal injuries suffered in motor vehicle traffic crashes. Once the package is installed 3 example files are accessible as follows:  
+
+```{r access_extdata, eval=FALSE}
+system.file('extdata', 'accident_2013.csv.bz2', package = 'fars')
+system.file('extdata', 'accident_2014.csv.bz2', package = 'fars')
+system.file('extdata', 'accident_2015.csv.bz2', package = 'fars')
+```
+
+I will use these files to explain the use of the functions in the package.  
+
+# Functions  
+## Using `make_filenam`  
+
+This function is used to construct a file name using the corresponding year. The following is an example to construct a FARS data file name for the year 2013.  
+
+```{r load_required_libraries}
+library(fars)
+library(maps)
+```
+
+```{r use_make_filename}
+make_filename(2013)
+```
+
+## Using `fars_read`  
+This function is a wrapper of the `readr::read_csv` and customized to parse a FARS data file when exists otherwise returns an error. The following is an example of using the function to read the file that I constructed its name in the last example, then try read a file that doesn't exist.   
+
+```{r use_fars_read}
+# file exist
+dat <- fars_read('accident_2013.csv.bz2')
+class(dat)
+# file does nott exist
+fars_read('accident_1900.csv.bz2')
+```
+
+## Using `fars_read_years`
+
+This is a custom function that is used to parse a number of FARS data files for the corresponding input `years`. If first construct file names using `make_filename` then reads the files in a `list` using `fars_read`. The function returns a warning for years that do not exist, as in the following example.  
+
+```{r use_fars_read_years}
+# all years exist
+yrs <- 2013:2015
+dat <- fars_read_years(yrs)
+class(dat)
+identical(length(yrs), length(dat))
+# year 2016 doesn't exist; warning returned
+yrs <- 2013:2016
+dat <- fars_read_years(yrs)
+```
+
+## Using `fars_summarize_years`  
+This function provides a numerical summary of the total number of accidents per month for each year. It takes as input a `years` and wraps the previous functionality added to the summary. The following example uses the year 2013 as an input, the function will construct a file name and read the FARS data file then prints a summary.  
+
+```{r use_fars_summarize_years}
+yrs <- 2013:2015
+fars_summarize_years(yrs)
+```
+
+## Using `fars_map_state`  
+This function plots the coordinates of individual accidents for a particular `year` on a map of a particular state, `state_num`. An error is returned if the `state.num` is invalid and a message is returned when the number of accidents for this state is 0 at this year.  
+
+```{r use_fars_mape_state, fig.align='center', fig.height=7, fig.width=7}
+# valid input; plot returned
+fars_map_state(50, 2013)
+# invalid input; error returned
+fars_map_state(500, 2013)
+```
+
+© 2019 GitHub, Inc.
